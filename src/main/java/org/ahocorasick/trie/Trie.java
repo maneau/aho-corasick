@@ -117,6 +117,19 @@ public class Trie {
         }
 
         /**
+         * Configure the Trie to ignore accent when searching for keywords in the text.
+         * This must be called before calling addKeyword because the algorithm converts
+         * keywords without accent as they are added, depending on this accent sensitivity
+         * setting.
+         *
+         * @return This builder.
+         */
+        public TrieBuilder ignoreAccent() {
+            delegate.ignoreAccent();
+            return this;
+        }
+
+        /**
          * Configure the Trie to ignore overlapping keywords.
          *
          * @return This builder.

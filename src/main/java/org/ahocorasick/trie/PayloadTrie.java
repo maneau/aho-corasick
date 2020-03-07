@@ -1,6 +1,7 @@
 package org.ahocorasick.trie;
 
 import static java.lang.Character.isWhitespace;
+import static org.ahocorasick.util.AccentUtils.unaccentChar;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import org.ahocorasick.interval.Intervalable;
 import org.ahocorasick.trie.handler.DefaultPayloadEmitHandler;
 import org.ahocorasick.trie.handler.PayloadEmitHandler;
 import org.ahocorasick.trie.handler.StatefulPayloadEmitHandler;
+import org.ahocorasick.util.AccentUtils;
 import org.ahocorasick.util.ListElementRemoval;
 import org.ahocorasick.util.ListElementRemoval.RemoveElementPredicate;
 
@@ -53,6 +55,9 @@ public class PayloadTrie<T> {
         if (isCaseInsensitive()) {
             keyword = keyword.toLowerCase();
         }
+        if (isAccentInsensitive()) {
+            keyword = AccentUtils.unaccent(keyword);
+        }
 
         addState(keyword).addEmit(new Payload<T>(keyword, emit));
     }
@@ -70,6 +75,9 @@ public class PayloadTrie<T> {
 
         if (isCaseInsensitive()) {
             keyword = keyword.toLowerCase();
+        }
+        if (isAccentInsensitive()) {
+            keyword = AccentUtils.unaccent(keyword);
         }
 
         addState(keyword).addEmit(new Payload<T>(keyword, null));
@@ -158,7 +166,7 @@ public class PayloadTrie<T> {
      * Returns true if the text contains contains one of the search terms. Else,
      * returns false.
      * 
-     * @param Text Specified text.
+     * @param text Specified text.
      * @return true if the text contains one of the search terms. Else, returns
      *         false.
      */
@@ -181,7 +189,9 @@ public class PayloadTrie<T> {
         for (int position = 0; position < text.length(); position++) {
             Character character = text.charAt(position);
 
-            // TODO: Maybe lowercase the entire string at once?
+            if (trieConfig.isAccentInsensitive()) {
+                character = unaccentChar(character);
+            }
             if (trieConfig.isCaseInsensitive()) {
                 character = Character.toLowerCase(character);
             }
@@ -214,7 +224,9 @@ public class PayloadTrie<T> {
             for (int position = 0; position < text.length(); position++) {
                 Character character = text.charAt(position);
 
-                // TODO: Lowercase the entire string at once?
+                if (trieConfig.isAccentInsensitive()) {
+                    character = unaccentChar(character);
+                }
                 if (trieConfig.isCaseInsensitive()) {
                     character = Character.toLowerCase(character);
                 }
@@ -323,8 +335,7 @@ public class PayloadTrie<T> {
         boolean emitted = false;
         final Collection<Payload<T>> payloads = currentState.emit();
 
-        // TODO: The check for empty might be superfluous.
-        if (payloads != null && !payloads.isEmpty()) {
+        if (!payloads.isEmpty()) {
             for (final Payload<T> payload : payloads) {
                 emitted = emitHandler.emit(new PayloadEmit<T>(position - payload.getKeyword().length() + 1, position,
                         payload.getKeyword(), payload.getData())) || emitted;
@@ -336,6 +347,10 @@ public class PayloadTrie<T> {
         }
 
         return emitted;
+    }
+
+    private boolean isAccentInsensitive() {
+        return trieConfig.isAccentInsensitive();
     }
 
     private boolean isCaseInsensitive() {
@@ -382,6 +397,11 @@ public class PayloadTrie<T> {
          */
         public PayloadTrieBuilder<T> ignoreCase() {
             this.trieConfig.setCaseInsensitive(true);
+            return this;
+        }
+
+        public PayloadTrieBuilder<T> ignoreAccent() {
+            this.trieConfig.setAccentInsensitive(true);
             return this;
         }
 

@@ -35,6 +35,10 @@ public class TrieTest {
             "turning", "once", "again", "börkü"
     };
 
+    private final static String[] ACCENT = new String[]{
+            "été", "déjà", "ça", "êÊiïîË"
+    };
+
     @Test
     public void keywordAndTextAreTheSame() {
         Trie trie = Trie.builder()
@@ -379,6 +383,34 @@ public class TrieTest {
     }
 
     @Test
+    public void testIgnoreAccent() {
+        Trie trie = Trie.builder().ignoreAccent()
+                .addKeywords(ACCENT)
+                .build();
+        Collection<Emit> emits = trie.parseText("ète dèja ca eEiiiE");
+        assertEquals(4, emits.size()); // Match must not be made
+        Iterator<Emit> it = emits.iterator();
+        checkEmit(it.next(), 0, 2, "ete");
+        checkEmit(it.next(), 4, 7, "deja");
+        checkEmit(it.next(), 9, 10, "ca");
+        checkEmit(it.next(), 12, 17, "eEiiiE");
+    }
+
+    @Test
+    public void testIgnoreAccentAndCase() {
+        Trie trie = Trie.builder().ignoreAccent().ignoreCase()
+                .addKeywords(ACCENT)
+                .build();
+        Collection<Emit> emits = trie.parseText("èTe dèJA CA eéïiiE");
+        assertEquals(4, emits.size()); // Match must not be made
+        Iterator<Emit> it = emits.iterator();
+        checkEmit(it.next(), 0, 2, "ete");
+        checkEmit(it.next(), 4, 7, "deja");
+        checkEmit(it.next(), 9, 10, "ca");
+        checkEmit(it.next(), 12, 17, "eeiiie");
+    }
+
+    @Test
     public void testIgnoreCaseFirstMatch() {
         Trie trie = Trie.builder().ignoreCase()
                 .addKeywords(UNICODE)
@@ -426,6 +458,7 @@ public class TrieTest {
         String target = "LİKE THIS"; // The second character ('İ') is Unicode, which was read by AC as a 2-byte char
         Trie trie = Trie.builder()
                 .ignoreCase()
+                .ignoreAccent()
                 .onlyWholeWords()
                 .addKeyword("this")
                 .build();

@@ -12,6 +12,8 @@ public class TrieConfig {
 
     private boolean stopOnHit = false;
 
+    private boolean accentInsensitive = false;
+
     public boolean isStopOnHit() {
         return stopOnHit;
     }
@@ -50,5 +52,13 @@ public class TrieConfig {
 
     public void setCaseInsensitive(boolean caseInsensitive) {
         this.caseInsensitive = caseInsensitive;
+    }
+
+    public void setAccentInsensitive(boolean accentInsensitive) {
+        this.accentInsensitive = accentInsensitive;
+    }
+
+    public boolean isAccentInsensitive() {
+        return accentInsensitive;
     }
 }
