@@ -136,6 +136,18 @@ Normally, this match would not be found. By calling `ignoreCase()`,
 the entire search text is made lowercase before matching begins.
 Therefore it will find exactly one match.
 
+The text with accent like `acçent` can be find using `ignoreAccent()`.
+Commun unicode accents are transform to ascii text without changing letter positions.
+Same transformation withou accent is apply to keywords. 
+
+```java
+Trie trie = Trie.builder()
+    .ignoreAccent()
+    .addKeyword("acçent")
+    .build();
+Collection<Emit> emits = trie.parseText("àccént");
+```
+
 It is also possible to just ask whether the text matches any of
 the keywords, or just to return the first match it finds.
 
